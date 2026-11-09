@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>陆慧 · 佩奇的小天地</title>
+<style>
+  :root {
+    --accent: #ff5fa2;
+    --accent-deep: #d94f8a;
+    --bg1: #fff0f7;
+    --bg2: #ffe1ef;
+    --text: #5a2a44;
+    --card: #ffffff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: "Comic Sans MS", "Microsoft YaHei", "PingFang SC", sans-serif;
+    color: var(--text);
+    background: linear-gradient(160deg, var(--bg1) 0%, var(--bg2) 60%, #ffe9f4 100%);
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: background 0.6s ease;
+  }
+
+  .clouds { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+  .cloud {
+    position: absolute;
+    background: #ffffff;
+    border-radius: 50%;
+    opacity: 0.75;
+    filter: blur(0.5px);
+    box-shadow: 40px 10px 0 -6px #fff, 90px 0 0 -14px #fff;
+    animation: drift linear infinite;
+  }
+  .cloud.c1 { width: 90px; height: 60px; top: 8%; left: -15%; animation-duration: 38s; }
+  .cloud.c2 { width: 60px; height: 42px; top: 24%; left: -20%; animation-duration: 52s; animation-delay: -12s; }
+  .cloud.c3 { width: 120px; height: 70px; top: 60%; left: -25%; animation-duration: 64s; animation-delay: -30s; opacity: 0.55; }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(160vw); } }
+
+  header {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 22px 24px;
+  }
+  .logo { font-weight: bold; font-size: 1.25rem; color: var(--accent); letter-spacing: 1px; }
+  .logo span { color: var(--accent-deep); }
+
+  .hero {
+    position: relative;
+    z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 30px 24px 60px;
+    display: flex;
+    align-items: center;
+    gap: 50px;
+    flex-wrap: wrap;
+  }
+  .hero-text { flex: 1 1 340px; }
+  .eyebrow {
+    color: var(--accent);
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+  }
+  h1 {
+    font-size: clamp(3rem, 9vw, 6.5rem);
+    line-height: 0.95;
+    color: var(--accent);
+    text-shadow: 4px 4px 0 #fff, 8px 8px 0 rgba(217, 79, 138, 0.18);
+    margin-bottom: 20px;
+  }
+  .lead {
+    font-size: clamp(1rem, 2.4vw, 1.25rem);
+    line-height: 1.7;
+    color: var(--text);
+    max-width: 30ch;
+    margin-bottom: 28px;
+  }
+  .btns { display: flex; gap: 14px; flex-wrap: wrap; }
+  button {
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    padding: 14px 26px;
+    border-radius: 999px;
+    color: #fff;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    box-shadow: 0 8px 18px rgba(217, 79, 138, 0.35);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  button:hover { transform: translateY(-3px); box-shadow: 0 12px 22px rgba(217, 79, 138, 0.4); }
+  button:active { transform: translateY(0) scale(0.97); }
+  button.ghost {
+    background: #fff;
+    color: var(--accent-deep);
+    box-shadow: 0 8px 18px rgba(217, 79, 138, 0.18);
+  }
+
+  .msg {
+    margin-top: 20px;
+    font-size: 1.05rem;
+    color: var(--accent-deep);
+    min-height: 1.6em;
+  }
+  .bounce { animation: bounce 0.5s ease; }
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+    60% { transform: translateY(0); }
+    80% { transform: translateY(-4px); }
+  }
+
+  .hero-art { flex: 1 1 320px; display: flex; justify-content: center; }
+  .peppa-card {
+    background: var(--card);
+    border-radius: 44px;
+    padding: 24px;
+    box-shadow: 0 26px 60px rgba(217, 79, 138, 0.28);
+    animation: float 4.5s ease-in-out infinite;
+    max-width: 360px;
+    width: 100%;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-14px); }
+  }
+  .peppa {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: block;
+  }
+  .peppa:hover { transform: scale(1.03) rotate(-1deg); }
+  .peppa.pop { animation: pop 0.5s ease; }
+  @keyframes pop {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.09) rotate(-4deg); }
+    70% { transform: scale(0.97) rotate(2deg); }
+    100% { transform: scale(1) rotate(0); }
+  }
+
+  .cards {
+    position: relative;
+    z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px 70px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 22px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 28px;
+    padding: 26px;
+    box-shadow: 0 16px 36px rgba(217, 79, 138, 0.16);
+    transition: transform 0.2s ease;
+  }
+  .card:hover { transform: translateY(-6px); }
+  .card .icon {
+    width: 54px; height: 54px;
+    border-radius: 18px;
+    display: grid; place-items: center;
+    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff;
+  }
+  .card .icon svg { width: 28px; height: 28px; }
+  .card h3 { font-size: 1.2rem; margin-bottom: 8px; color: var(--accent-deep); }
+  .card p { font-size: 0.95rem; line-height: 1.6; opacity: 0.85; }
+
+  footer {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 26px;
+    color: var(--accent-deep);
+    font-size: 0.9rem;
+    opacity: 0.8;
+  }
+
+  .heart {
+    position: fixed;
+    width: 18px; height: 18px;
+    background: var(--accent);
+    transform: rotate(-45deg);
+    pointer-events: none;
+    z-index: 50;
+    animation: floatUp 1.2s ease-out forwards;
+  }
+  .heart::before, .heart::after {
+    content: "";
+    position: absolute;
+    width: 18px; height: 18px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .heart::before { top: -9px; left: 0; }
+  .heart::after { left: 9px; top: 0; }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) rotate(-45deg) scale(1); }
+    100% { opacity: 0; transform: translateY(-90px) rotate(-45deg) scale(0.4); }
+  }
+
+  @media (max-width: 720px) {
+    .hero { gap: 30px; text-align: center; }
+    .hero-text { display: flex; flex-direction: column; align-items: center; }
+    .lead { margin-left: auto; margin-right: auto; }
+    .btns { justify-content: center; }
+  }
+</style>
+</head>
+<body>
+  <div class="clouds">
+    <div class="cloud c1"></div>
+    <div class="cloud c2"></div>
+    <div class="cloud c3"></div>
+  </div>
+
+  <header>
+    <div class="logo">陆慧 · <span>Peppa World</span></div>
+  </header>
+
+  <main class="hero">
+    <div class="hero-text">
+      <p class="eyebrow">Peppa's Little World</p>
+      <h1>陆慧</h1>
+      <p class="lead">欢迎来到陆慧的小天地，这里有粉粉的佩奇，和满满的好心情。</p>
+      <div class="btns">
+        <button id="sayBtn">佩奇说句话</button>
+        <button id="colorBtn" class="ghost">换个颜色</button>
+      </div>
+      <p id="msg" class="msg">点一下右边的佩奇试试～</p>
+    </div>
+
+    <div class="hero-art">
+      <div class="peppa-card">
+        <svg id="peppa" class="peppa" viewBox="0 0 320 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="佩奇">
+          <path d="M232 250 q30 -6 22 -32 q-8 -22 -28 -12" fill="none" stroke="#f7a8c4" stroke-width="8" stroke-linecap="round"/>
+          <g stroke="#f7a8c4" stroke-width="15" stroke-linecap="round">
+            <line x1="140" y1="300" x2="140" y2="360"/>
+            <line x1="185" y1="300" x2="185" y2="360"/>
+          </g>
+          <ellipse cx="140" cy="367" rx="26" ry="12" fill="#2b2b2b"/>
+          <ellipse cx="185" cy="367" rx="26" ry="12" fill="#2b2b2b"/>
+          <g stroke="#f7a8c4" stroke-width="14" stroke-linecap="round">
+            <line x1="98" y1="240" x2="56" y2="204"/>
+            <line x1="222" y1="240" x2="264" y2="204"/>
+          </g>
+          <path d="M160 185 C120 185 92 225 90 285 C88 316 112 324 160 324 C208 324 232 316 230 285 C228 225 200 185 160 185 Z"
+                fill="#e8433f" stroke="#b52f2c" stroke-width="5"/>
+          <path d="M128 62 q-10 -28 12 -32 q8 18 14 32" fill="#f7a8c4" stroke="#c2417a" stroke-width="5" stroke-linejoin="round"/>
+          <path d="M190 56 q4 -30 26 -26 q0 22 -8 34" fill="#f7a8c4" stroke="#c2417a" stroke-width="5" stroke-linejoin="round"/>
+          <ellipse cx="165" cy="125" rx="90" ry="80" fill="#f7a8c4" stroke="#c2417a" stroke-width="5"/>
+          <ellipse cx="82" cy="112" rx="38" ry="30" fill="#f7a8c4" stroke="#c2417a" stroke-width="5"/>
+          <ellipse cx="68" cy="105" rx="6" ry="9" fill="#c2417a"/>
+          <ellipse cx="92" cy="108" rx="6" ry="9" fill="#c2417a"/>
+          <circle cx="158" cy="88" r="17" fill="#fff" stroke="#c2417a" stroke-width="3"/>
+          <circle cx="203" cy="84" r="17" fill="#fff" stroke="#c2417a" stroke-width="3"/>
+          <circle cx="163" cy="90" r="6" fill="#222"/>
+          <circle cx="208" cy="86" r="6" fill="#222"/>
+          <circle cx="133" cy="140" r="12" fill="#ff7fb0" opacity="0.6"/>
+          <path d="M140 148 q22 26 52 12" fill="none" stroke="#c2417a" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </main>
+
+  <section class="cards">
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 21s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.5-7 10-7 10z"/>
+        </svg>
+      </div>
+      <h3>爱笑</h3>
+      <p>陆慧一笑，粉粉的空气都甜了，像佩奇的笑声一样藏不住。</p>
+    </div>
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3l2.6 5.6 6.1.6-4.6 4.1 1.3 6-5.4-3.1-5.4 3.1 1.3-6L3.3 9.2l6.1-.6z"/>
+        </svg>
+      </div>
+      <h3>爱玩</h3>
+      <p>晴天就去跳泥坑，噗通一声，裤子湿了也不怕，开心最重要。</p>
+    </div>
+    <div class="card">
+      <div class="icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M8.5 14.5s1.2 2 3.5 2 3.5-2 3.5-2"/>
+          <circle cx="9" cy="9.5" r="0.8" fill="currentColor"/>
+          <circle cx="15" cy="9.5" r="0.8" fill="currentColor"/>
+        </svg>
+      </div>
+      <h3>粉粉的</h3>
+      <p>整个页面都是佩奇的粉色，软软的、暖暖的，看着就想笑。</p>
+    </div>
+  </section>
+
+  <footer>Made with love · 陆慧的小天地</footer>
+
+  <script>
+    const lines = [
+      "我是佩奇，这是我的小天地！",
+      "我最喜欢在泥坑里跳来跳去啦！",
+      "噜噜噜～今天也要开心哦！",
+      "陆慧，你今天真好看！",
+      "要不要一起去跳泥坑？"
+    ];
+    const msg = document.getElementById("msg");
+    const peppa = document.getElementById("peppa");
+
+    document.getElementById("sayBtn").addEventListener("click", () => {
+      msg.textContent = lines[Math.floor(Math.random() * lines.length)];
+      msg.classList.remove("bounce");
+      void msg.offsetWidth;
+      msg.classList.add("bounce");
+    });
+
+    const palettes = [
+      { a: "#ff5fa2", d: "#d94f8a", b1: "#fff0f7", b2: "#ffe1ef" },
+      { a: "#7c6cff", d: "#5a48e0", b1: "#f0f2ff", b2: "#e2e6ff" },
+      { a: "#2ec4b6", d: "#1a9e93", b1: "#effcfa", b2: "#dffaf6" },
+      { a: "#ff9f43", d: "#e07b1a", b1: "#fff7ec", b2: "#ffedd6" }
+    ];
+    let pIndex = 0;
+    document.getElementById("colorBtn").addEventListener("click", () => {
+      pIndex = (pIndex + 1) % palettes.length;
+      const p = palettes[pIndex];
+      const r = document.documentElement.style;
+      r.setProperty("--accent", p.a);
+      r.setProperty("--accent-deep", p.d);
+      r.setProperty("--bg1", p.b1);
+      r.setProperty("--bg2", p.b2);
+    });
+
+    peppa.addEventListener("click", (e) => {
+      peppa.classList.remove("pop");
+      void peppa.offsetWidth;
+      peppa.classList.add("pop");
+      for (let i = 0; i < 8; i++) {
+        const h = document.createElement("div");
+        h.className = "heart";
+        h.style.left = e.clientX - 9 + (Math.random() * 60 - 30) + "px";
+        h.style.top = e.clientY - 9 + (Math.random() * 20 - 10) + "px";
+        h.style.animationDelay = Math.random() * 0.15 + "s";
+        document.body.appendChild(h);
+        setTimeout(() => h.remove(), 1400);
+      }
+    });
+  </script>
+</body>
+</html>
