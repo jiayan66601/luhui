@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>三陆慧 · 同名异格</title>
+<style>
+  :root{
+    --gold:#d4af37;
+    --gold-soft:#e8cf8a;
+    --bg:#08080d;
+    --panel:rgba(20,20,30,.55);
+    --line:rgba(212,175,55,.28);
+    --accent:#d4af37;
+    --txt:#ece9e2;
+    --muted:#9a958a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:"Songti SC","Source Han Serif SC",Georgia,"Times New Roman",serif;
+    background:var(--bg);
+    color:var(--txt);
+    overflow-x:hidden;
+    cursor:none;
+  }
+  /* ---------- 自定义光标 ---------- */
+  .cursor-dot,.cursor-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:9999;border-radius:50%;transform:translate(-50%,-50%);}
+  .cursor-dot{width:6px;height:6px;background:var(--accent);box-shadow:0 0 12px var(--accent);}
+  .cursor-ring{width:36px;height:36px;border:1px solid var(--accent);opacity:.55;transition:width .25s,height .25s,opacity .25s,border-color .3s;}
+  .cursor-ring.grow{width:64px;height:64px;opacity:.9;border-color:var(--gold-soft);}
+  @media (hover:none){body{cursor:auto;}.cursor-dot,.cursor-ring{display:none;}}
+
+  /* ---------- 背景粒子 ---------- */
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .glow-blob{position:fixed;border-radius:50%;filter:blur(120px);opacity:.35;z-index:0;pointer-events:none;transition:background .8s;}
+  .blob1{width:520px;height:520px;background:var(--accent);top:-160px;left:-120px;}
+  .blob2{width:460px;height:460px;background:#6a5acd;bottom:-180px;right:-140px;opacity:.25;}
+
+  /* ---------- 顶栏 ---------- */
+  header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;
+    padding:20px 5vw;backdrop-filter:blur(12px);background:linear-gradient(180deg,rgba(8,8,13,.85),transparent);}
+  .logo{font-size:20px;letter-spacing:.32em;color:var(--gold-soft);font-weight:600;}
+  .logo span{color:var(--accent);}
+  nav{display:flex;gap:26px;}
+  nav a{color:var(--muted);text-decoration:none;font-size:13px;letter-spacing:.18em;transition:color .3s;position:relative;cursor:none;}
+  nav a:hover{color:var(--gold-soft);}
+  nav a::after{content:'';position:absolute;left:0;bottom:-6px;width:0;height:1px;background:var(--accent);transition:width .3s;}
+  nav a:hover::after{width:100%;}
+
+  /* ---------- Hero ---------- */
+  .hero{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 5vw;}
+  .eyebrow{font-size:12px;letter-spacing:.6em;color:var(--muted);margin-bottom:28px;opacity:0;animation:fadeUp 1s .2s forwards;}
+  .hero h1{font-size:clamp(64px,13vw,180px);line-height:.92;font-weight:700;letter-spacing:.06em;
+    background:linear-gradient(180deg,#fff,var(--gold-soft) 45%,#8a6d1f);-webkit-background-clip:text;background-clip:text;color:transparent;
+    opacity:0;animation:fadeUp 1.2s .4s forwards;}
+  .hero .sub{margin-top:32px;font-size:clamp(14px,2vw,20px);letter-spacing:.5em;color:var(--gold-soft);opacity:0;animation:fadeUp 1s .8s forwards;}
+  .hero .desc{margin-top:18px;max-width:560px;color:var(--muted);font-size:15px;line-height:2;letter-spacing:.08em;opacity:0;animation:fadeUp 1s 1.1s forwards;}
+  .scroll-hint{position:absolute;bottom:36px;left:50%;transform:translateX(-50%);color:var(--muted);font-size:11px;letter-spacing:.4em;display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0;animation:fadeUp 1s 1.5s forwards;}
+  .scroll-hint .line{width:1px;height:48px;background:linear-gradient(var(--accent),transparent);animation:pulse 2s infinite;}
+
+  /* ---------- 通用区块 ---------- */
+  section{position:relative;z-index:2;padding:120px 5vw;}
+  .sec-head{text-align:center;margin-bottom:80px;}
+  .sec-head .kicker{font-size:12px;letter-spacing:.5em;color:var(--accent);margin-bottom:16px;}
+  .sec-head h2{font-size:clamp(30px,5vw,54px);letter-spacing:.08em;font-weight:600;}
+  .sec-head h2 em{font-style:normal;color:var(--gold-soft);}
+
+  /* ---------- 三卡 ---------- */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px;max-width:1240px;margin:0 auto;perspective:1600px;}
+  .card{position:relative;border:1px solid var(--line);border-radius:22px;padding:44px 34px;background:var(--panel);
+    backdrop-filter:blur(14px);overflow:hidden;transform-style:preserve-3d;transition:box-shadow .4s,border-color .4s;
+    opacity:0;transform:translateY(40px);cursor:none;}
+  .card.in{opacity:1;transform:translateY(0);transition:opacity .7s,transform .7s;}
+  .card::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at var(--mx,50%) var(--my,50%),rgba(212,175,55,.16),transparent 55%);opacity:0;transition:opacity .4s;}
+  .card:hover::before{opacity:1;}
+  .card:hover{border-color:var(--gold-soft);box-shadow:0 30px 80px -30px rgba(212,175,55,.5);}
+  .glyph{font-size:64px;margin-bottom:26px;filter:drop-shadow(0 6px 22px rgba(212,175,55,.35));transition:transform .5s;}
+  .card:hover .glyph{transform:scale(1.12) rotate(-4deg);}
+  .card h3{font-size:30px;letter-spacing:.14em;margin-bottom:6px;}
+  .card .tag{font-size:12px;letter-spacing:.3em;color:var(--accent);margin-bottom:22px;}
+  .card p{color:var(--muted);font-size:14px;line-height:1.95;letter-spacing:.04em;}
+  .card .more{margin-top:28px;font-size:12px;letter-spacing:.3em;color:var(--gold-soft);display:inline-flex;align-items:center;gap:10px;opacity:.85;}
+  .card .more .arrow{transition:transform .3s;}
+  .card:hover .more .arrow{transform:translateX(6px);}
+
+  /* ---------- 档案 / 进度条 ---------- */
+  .profile{max-width:960px;margin:0 auto;}
+  .profile-row{display:grid;grid-template-columns:130px 1fr 60px;align-items:center;gap:24px;padding:22px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+  .profile-row .name{font-size:16px;letter-spacing:.1em;color:var(--gold-soft);}
+  .bar{height:6px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden;}
+  .bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--gold-soft));transition:width 1.4s cubic-bezier(.19,1,.22,1);}
+  .profile-row .val{text-align:right;font-size:13px;color:var(--muted);letter-spacing:.1em;}
+
+  /* ---------- 主题切换 ---------- */
+  .theme-switch{display:flex;justify-content:center;gap:18px;margin-bottom:60px;flex-wrap:wrap;}
+  .swatch{width:46px;height:46px;border-radius:50%;border:2px solid transparent;cursor:none;transition:transform .3s,border-color .3s;display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .swatch:hover{transform:scale(1.15);}
+  .swatch.active{border-color:var(--gold-soft);box-shadow:0 0 0 4px rgba(212,175,55,.15);}
+
+  /* ---------- 弹窗 ---------- */
+  .modal-mask{position:fixed;inset:0;background:rgba(4,4,8,.82);backdrop-filter:blur(8px);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;
+    opacity:0;pointer-events:none;transition:opacity .4s;}
+  .modal-mask.open{opacity:1;pointer-events:auto;}
+  .modal{max-width:620px;width:100%;background:linear-gradient(160deg,rgba(28,28,40,.96),rgba(12,12,18,.98));border:1px solid var(--line);border-radius:24px;padding:50px 46px;position:relative;
+    transform:translateY(30px) scale(.96);transition:transform .45s cubic-bezier(.19,1,.22,1);box-shadow:0 40px 120px -30px rgba(0,0,0,.9);}
+  .modal-mask.open .modal{transform:translateY(0) scale(1);}
+  .modal .big-glyph{font-size:74px;margin-bottom:20px;}
+  .modal h3{font-size:34px;letter-spacing:.12em;margin-bottom:8px;color:var(--gold-soft);}
+  .modal .mtag{font-size:12px;letter-spacing:.34em;color:var(--accent);margin-bottom:26px;}
+  .modal p{color:#cfcac0;line-height:2.1;font-size:15px;letter-spacing:.03em;}
+  .modal .close{position:absolute;top:22px;right:26px;font-size:26px;color:var(--muted);cursor:none;transition:color .3s,transform .3s;}
+  .modal .close:hover{color:var(--gold-soft);transform:rotate(90deg);}
+  .modal .keys{margin-top:30px;font-size:11px;letter-spacing:.2em;color:var(--muted);border-top:1px solid rgba(255,255,255,.08);padding-top:18px;}
+
+  /* ---------- 页脚 ---------- */
+  footer{position:relative;z-index:2;text-align:center;padding:90px 5vw 60px;color:var(--muted);font-size:12px;letter-spacing:.24em;}
+  footer .mark{color:var(--accent);font-size:16px;letter-spacing:.4em;margin-bottom:18px;}
+
+  /* ---------- 提示 toast ---------- */
+  .toast{position:fixed;bottom:36px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--line);color:var(--gold-soft);
+    padding:14px 28px;border-radius:40px;font-size:13px;letter-spacing:.2em;z-index:900;opacity:0;pointer-events:none;transition:opacity .4s,transform .4s;backdrop-filter:blur(10px);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(30px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes pulse{0%,100%{opacity:.3;}50%{opacity:1;}}
+  .loader{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;transition:opacity .8s,visibility .8s;}
+  .loader.hide{opacity:0;visibility:hidden;}
+  .loader .ln{font-size:13px;letter-spacing:.5em;color:var(--gold-soft);}
+  .loader .ring{width:54px;height:54px;border:2px solid rgba(212,175,55,.2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @media(max-width:640px){nav{display:none;}.profile-row{grid-template-columns:90px 1fr 44px;gap:14px;}}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader">
+  <div class="ring"></div>
+  <div class="ln">三 陆 慧 · 载 入</div>
+</div>
+
+<div class="cursor-dot" id="dot"></div>
+<div class="cursor-ring" id="ring"></div>
+<canvas id="stars"></canvas>
+<div class="glow-blob blob1" id="blob1"></div>
+<div class="glow-blob blob2"></div>
+
+<header>
+  <div class="logo">陆<span>慧</span> · LUHUI</div>
+  <nav>
+    <a href="#gallery">三格</a>
+    <a href="#archive">档案</a>
+    <a href="#about">释义</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">SAME NAME · DIFFERENT SOULS</div>
+  <h1>三陆慧</h1>
+  <div class="sub">猪 · 猴 · 狗</div>
+  <p class="desc">同名「陆慧」，三副面孔。<br>一种温厚，一种灵巧，一种忠诚。滚动，或点击卡片，逐一辨认。</p>
+  <div class="scroll-hint"><span>向下</span><div class="line"></div></div>
+</div>
+
+<section id="gallery">
+  <div class="sec-head">
+    <div class="kicker">GALLERY</div>
+    <h2>三位同名者 <em>/ Three 陆慧</em></h2>
+  </div>
+  <div class="cards" id="cards"></div>
+</section>
+
+<section id="archive">
+  <div class="sec-head">
+    <div class="kicker">DOSSIER</div>
+    <h2>陆慧 档案 <em>/ Profile</em></h2>
+  </div>
+  <div class="theme-switch" id="themeSwitch"></div>
+  <div class="profile" id="profile"></div>
+</section>
+
+<section id="about">
+  <div class="sec-head">
+    <div class="kicker">INTERPRETATION</div>
+    <h2>释义 <em>/ On the Name</em></h2>
+  </div>
+  <div class="profile" style="text-align:center;max-width:720px;">
+    <p style="color:#cfcac0;line-height:2.3;font-size:16px;letter-spacing:.04em;">
+      「陆」者，大地之厚载；「慧」者，生性之颖悟。<br>
+      以大地之德，养聪慧之心 —— 无论猪之温、猴之灵、狗之忠，皆归于此名。<br>
+      <span style="color:var(--gold-soft)">三格同源，一名万象。</span>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="mark">陆 慧</div>
+  <div>© 2026　同名异格 · 交互典藏版</div>
+</footer>
+
+<div class="modal-mask" id="modalMask">
+  <div class="modal">
+    <div class="close" id="modalClose">×</div>
+    <div class="big-glyph" id="mGlyph"></div>
+    <h3 id="mName"></h3>
+    <div class="mtag" id="mTag"></div>
+    <p id="mDesc"></p>
+    <div class="keys">按 ESC 关闭　·　按 ← → 切换</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 数据 ============ */
+const DATA = [
+  {glyph:"🐖", name:"陆慧", tag:"THE KIND · 猪格", color:"#e68fb0",
+   short:"温厚的食粮守护者，日子过得踏实、丰足、不急不躁。",
+   full:"陆慧·猪格，是三人中最懂「丰足」的那一位。他以食为天、以安为福，把日子过成一桌热气腾腾的宴席。看似憨厚，胸中却自有一杆秤：不争、不抢、不慌，把每一分光阴都嚼得香甜。所谓「大智若愚」，说的正是他。"},
+  {glyph:"🐒", name:"陆慧", tag:"THE WIT · 猴格", color:"#e8c86a",
+   short:"机敏的行动家，头脑转得飞快，点子层出不穷。",
+   full:"陆慧·猴格，是三人中最会「破局」的那一位。他眼明手快、好奇心盛，见缝插针，逢山开路。别人还在犹豫，他已翻过两道墙；别人刚想到一步，他已准备好三步。灵动不羁，却始终心向高处——聪慧之「慧」，在他身上最是淋漓尽致。"},
+  {glyph:"🐕", name:"陆慧", tag:"THE FAITHFUL · 狗格", color:"#8fb8e8",
+   short:"忠诚的守夜人，重情重义，危难时从不退让。",
+   full:"陆慧·狗格，是三人中最重「情义」的那一位。他守诺如金，疾风骤雨中站在门口，替所有人挡下寒意。不擅言辞，却以行动写尽忠诚：谁有难，他第一个到；谁安睡，他最后才眠。慧不在巧，而在诚——这份赤忱，正是「慧」的另一重注解。"}
+];
+
+const PROFILE = {
+  "猪格":[{k:"温厚",v:95},{k:"食量",v:98},{k:"耐性",v:90},{k:"大智若愚",v:88}],
+  "猴格":[{k:"机敏",v:97},{k:"行动力",v:95},{k:"好奇心",v:99},{k:"破局力",v:92}],
+  "狗格":[{k:"忠诚",v:99},{k:"守诺",v:97},{k:"义气",v:96},{k:"警觉",v:90}]
+};
+const THEMES = [
+  {name:"猪格", color:"#e68fb0", key:"猪格"},
+  {name:"猴格", color:"#e8c86a", key:"猴格"},
+  {name:"狗格", color:"#8fb8e8", key:"狗格"}
+];
+
+/* ============ 装载卡片 ============ */
+const cardsEl = document.getElementById('cards');
+DATA.forEach((d,i)=>{
+  const c = document.createElement('div');
+  c.className='card';
+  c.dataset.idx=i;
+  c.innerHTML = `
+    <div class="glyph">${d.glyph}</div>
+    <h3>${d.name}</h3>
+    <div class="tag" style="color:${d.color}">${d.tag}</div>
+    <p>${d.short}</p>
+    <div class="more">展开 <span class="arrow">→</span></div>`;
+  cardsEl.appendChild(c);
+});
+
+/* ============ 自定义光标 ============ */
+const dot=document.getElementById('dot'), ring=document.getElementById('ring');
+let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+function loop(){rx+=(mx-rx)*.18;ry+=(my-ry)*.18;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);}
+loop();
+document.querySelectorAll('a,.card,.swatch,.close').forEach(el=>{
+  el.addEventListener('mouseenter',()=>ring.classList.add('grow'));
+  el.addEventListener('mouseleave',()=>ring.classList.remove('grow'));
+});
+
+/* ============ 粒子背景 ============ */
+const cv=document.getElementById('stars'),ctx=cv.getContext('2d');
+let W,H,pts=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+resize();addEventListener('resize',resize);
+for(let i=0;i<90;i++)pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.3,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,a:Math.random()*.6+.2});
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  pts.forEach(p=>{
+    p.x+=p.vx;p.y+=p.vy;
+    if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle='rgba(212,175,55,'+p.a+')';ctx.fill();
+  });
+  // 连线
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);
+    if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle='rgba(212,175,55,'+(0.12*(1-d/130))+')';ctx.stroke();}
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ============ 卡片 3D 倾斜 ============ */
+cardsEl.querySelectorAll('.card').forEach(card=>{
+  card.addEventListener('mousemove',e=>{
+    const r=card.getBoundingClientRect();
+    const x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+    card.style.setProperty('--mx',(x*100)+'%');
+    card.style.setProperty('--my',(y*100)+'%');
+    card.style.transform=`translateY(-6px) rotateX(${(0.5-y)*12}deg) rotateY(${(x-0.5)*12}deg)`;
+  });
+  card.addEventListener('mouseleave',()=>{card.style.transform='translateY(0) rotateX(0) rotateY(0)';});
+  card.addEventListener('click',()=>openModal(+card.dataset.idx));
+});
+
+/* ============ 滚动出现 ============ */
+const io=new IntersectionObserver(es=>es.forEach(en=>{if(en.isIntersecting){en.target.classList.add('in');}}),{threshold:.15});
+cardsEl.querySelectorAll('.card').forEach((c,i)=>{c.style.transitionDelay=(i*.12)+'s';io.observe(c);});
+
+/* ============ 档案 + 主题 ============ */
+const profileEl=document.getElementById('profile');
+const themeSwitch=document.getElementById('themeSwitch');
+let currentTheme=0;
+function renderProfile(idx){
+  const key=THEMES[idx].key;
+  profileEl.innerHTML='';
+  PROFILE[key].forEach(row=>{
+    const div=document.createElement('div');
+    div.className='profile-row';
+    div.innerHTML=`<div class="name">${row.k}</div><div class="bar"><i></i></div><div class="val">${row.v}</div>`;
+    profileEl.appendChild(div);
+  });
+  // 动画
+  requestAnimationFrame(()=>{
+    profileEl.querySelectorAll('.bar i').forEach((bar,ri)=>{
+      setTimeout(()=>{bar.style.width=PROFILE[key][ri].v+'%';},100+ri*120);
+    });
+  });
+}
+THEMES.forEach((t,i)=>{
+  const s=document.createElement('div');
+  s.className='swatch'+(i===0?' active':'');
+  s.style.background=t.color;
+  s.title=t.name;
+  s.textContent=DATA[i].glyph;
+  s.addEventListener('click',()=>setTheme(i));
+  themeSwitch.appendChild(s);
+});
+function setTheme(i){
+  currentTheme=i;
+  document.documentElement.style.setProperty('--accent',THEMES[i].color);
+  document.getElementById('blob1').style.background=THEMES[i].color;
+  document.querySelectorAll('.swatch').forEach((s,j)=>s.classList.toggle('active',j===i));
+  renderProfile(i);
+  showToast('已切换 · '+THEMES[i].name);
+}
+renderProfile(0);
+
+/* ============ 弹窗 ============ */
+const mask=document.getElementById('modalMask');
+let modalIdx=0;
+function openModal(i){
+  modalIdx=i;
+  const d=DATA[i];
+  document.getElementById('mGlyph').textContent=d.glyph;
+  document.getElementById('mName').textContent=d.name;
+  const mtag=document.getElementById('mTag');
+  mtag.textContent=d.tag; mtag.style.color=d.color;
+  document.getElementById('mDesc').textContent=d.full;
+  mask.classList.add('open');
+}
+function closeModal(){mask.classList.remove('open');}
+document.getElementById('modalClose').addEventListener('click',closeModal);
+mask.addEventListener('click',e=>{if(e.target===mask)closeModal();});
+function navModal(dir){modalIdx=(modalIdx+dir+DATA.length)%DATA.length;openModal(modalIdx);}
+
+/* ============ 键盘 ============ */
+addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(mask.classList.contains('open')){
+    if(e.key==='ArrowRight')navModal(1);
+    if(e.key==='ArrowLeft')navModal(-1);
+  }
+  if(['1','2','3'].includes(e.key)&&!mask.classList.contains('open')){
+    setTheme(+e.key-1);
+  }
+});
+
+/* ============ Toast ============ */
+let toastTimer;
+const toast=document.getElementById('toast');
+function showToast(msg){
+  toast.textContent=msg;toast.classList.add('show');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.classList.remove('show'),1800);
+}
+
+/* ============ 彩蛋：输入 luhui ============ */
+let buffer='';
+addEventListener('keydown',e=>{
+  if(e.key.length!==1)return;
+  buffer=(buffer+e.key).slice(-6).toLowerCase();
+  if(buffer==='luhui'){
+    document.querySelectorAll('.glyph').forEach(g=>{g.style.transition='transform .6s';g.style.transform='scale(1.3) rotate(360deg)';});
+    showToast('🌸 你找到了隐藏的 陆慧 ~');
+    setTimeout(()=>document.querySelectorAll('.glyph').forEach(g=>g.style.transform=''),900);
+    buffer='';
+  }
+});
+
+/* ============ 载入完成 ============ */
+window.addEventListener('load',()=>{
+  setTimeout(()=>document.getElementById('loader').classList.add('hide'),700);
+});
+</script>
+</body>
+</html>
