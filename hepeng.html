@@ -145,7 +145,7 @@
 <div class="loader" id="loader"><div class="rg"></div><div class="ln">何 鹏 · 载 入</div></div>
 
 <div class="cur-dot" id="dot"></div>
-<div class="cur-ring" id="ring"></div>
+<div class="cur-ring" id="curRing"></div>
 <canvas id="bgcanvas"></canvas>
 <div class="blob b1" id="blob1"></div>
 <div class="blob b2"></div>
@@ -256,7 +256,7 @@ function draw(){
 draw();
 
 /* ============ 光标 ============ */
-const dot=document.getElementById('dot'),ring=document.getElementById('ring');
+const dot=document.getElementById('dot'),ring=document.getElementById('curRing');
 let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
 addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
 (function loop(){rx+=(mx-rx)*.16;ry+=(my-ry)*.16;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
@@ -354,6 +354,9 @@ function renderProfile(i){
   });
   requestAnimationFrame(()=>{profileEl.querySelectorAll('.bar i').forEach((b,j)=>setTimeout(()=>b.style.width=FORMS[i].stats[j][1]+'%',120+j*120));});
 }
+/* toast（提前声明，供 setForm 调用） */
+let tt;const toastEl=document.getElementById('toast');
+function showToast(m){toastEl.textContent=m;toastEl.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toastEl.classList.remove('show'),1800);}
 setForm(0);
 
 /* ============ 弹窗 ============ */
@@ -385,14 +388,12 @@ addEventListener('keydown',e=>{
   }
 });
 
-/* ============ toast ============ */
-let tt;const toast=document.getElementById('toast');
-function showToast(m){toast.textContent=m;toast.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('show'),1800);}
-
 /* 初始 hover 绑定 + 载入 */
-window.addEventListener('load',()=>{
-  setTimeout(()=>{document.getElementById('loader').classList.add('hide');bindHover();},700);
-});
+/* 加载页可靠关闭：DOM 就绪即淡出，另加 load 与超时兜底 */
+document.addEventListener('DOMContentLoaded',hideLoader);
+window.addEventListener('load',hideLoader);
+setTimeout(hideLoader,2500);
+function hideLoader(){var l=document.getElementById('loader');if(l&&!l.classList.contains('hide')){l.classList.add('hide');setTimeout(function(){l.style.display='none';},900);bindHover();}}
 </script>
 </body>
 </html>
