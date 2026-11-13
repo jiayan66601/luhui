@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>何鹏 · 三格同源</title>
+<style>
+  :root{
+    --accent:#d4af37;
+    --accent-soft:#f0dfa6;
+    --bg:#07070b;
+    --panel:rgba(18,18,26,.55);
+    --line:rgba(212,175,55,.26);
+    --txt:#ece9e2;
+    --muted:#96918a;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    font-family:"Songti SC","Source Han Serif SC",Georgia,serif;
+    background:var(--bg);color:var(--txt);
+    overflow-x:hidden;cursor:none;
+  }
+  ::selection{background:var(--accent);color:#111;}
+
+  /* 光标 */
+  .cur-dot,.cur-ring{position:fixed;top:0;left:0;pointer-events:none;z-index:9999;border-radius:50%;transform:translate(-50%,-50%);}
+  .cur-dot{width:6px;height:6px;background:var(--accent);box-shadow:0 0 14px var(--accent);}
+  .cur-ring{width:38px;height:38px;border:1px solid var(--accent);opacity:.5;transition:width .25s,height .25s,opacity .25s;}
+  .cur-ring.big{width:74px;height:74px;opacity:.95;}
+  @media (hover:none){body{cursor:auto;}.cur-dot,.cur-ring{display:none;}}
+
+  /* 背景 */
+  #bgcanvas{position:fixed;inset:0;z-index:0;pointer-events:none;}
+  .blob{position:fixed;border-radius:50%;filter:blur(130px);opacity:.3;z-index:0;pointer-events:none;transition:background .8s;}
+  .b1{width:560px;height:560px;top:-180px;left:-140px;background:var(--accent);}
+  .b2{width:500px;height:500px;bottom:-200px;right:-160px;background:#6a5acd;opacity:.22;}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:18px 5vw;
+    backdrop-filter:blur(12px);background:linear-gradient(180deg,rgba(7,7,11,.85),transparent);}
+  .logo{font-size:19px;letter-spacing:.3em;color:var(--accent-soft);}
+  .logo b{color:var(--accent);}
+  nav{display:flex;gap:24px;}
+  nav a{color:var(--muted);text-decoration:none;font-size:12px;letter-spacing:.2em;position:relative;cursor:none;}
+  nav a:hover{color:var(--accent-soft);}
+  nav a::after{content:'';position:absolute;left:0;bottom:-6px;height:1px;width:0;background:var(--accent);transition:width .3s;}
+  nav a:hover::after{width:100%;}
+
+  /* Hero */
+  .hero{position:relative;z-index:2;min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:120px 5vw 60px;}
+  .eyebrow{font-size:11px;letter-spacing:.55em;color:var(--muted);margin-bottom:18px;opacity:0;animation:up 1s .2s forwards;}
+  .hero h1{font-size:clamp(58px,12vw,150px);line-height:.9;font-weight:700;letter-spacing:.08em;
+    background:linear-gradient(180deg,#fff,var(--accent-soft) 45%,#8a6d1f);-webkit-background-clip:text;background-clip:text;color:transparent;
+    opacity:0;animation:up 1.1s .4s forwards;}
+  .hero .sub{margin-top:20px;font-size:clamp(13px,1.8vw,18px);letter-spacing:.55em;color:var(--accent-soft);opacity:0;animation:up 1s .8s forwards;}
+  .drag-hint{margin-top:8px;font-size:11px;letter-spacing:.3em;color:var(--muted);opacity:0;animation:up 1s 1.2s forwards;}
+
+  /* 3D 旋转环 */
+  .stage{position:relative;z-index:2;width:100%;max-width:1000px;height:520px;margin:30px auto 0;perspective:1700px;display:flex;align-items:center;justify-content:center;opacity:0;animation:up 1.2s 1s forwards;}
+  .ring{position:relative;width:300px;height:420px;transform-style:preserve-3d;will-change:transform;}
+  .panel{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform;}
+  .pcard{
+    position:absolute;inset:0;border-radius:26px;border:1px solid var(--line);
+    background:var(--panel);backdrop-filter:blur(12px);
+    display:flex;flex-direction:column;align-items:center;justify-content:flex-start;
+    padding:34px 20px 26px;overflow:hidden;
+    box-shadow:0 30px 70px -30px rgba(0,0,0,.9);
+    transition:border-color .4s,box-shadow .4s;
+    transform-style:preserve-3d;
+    cursor:none;
+  }
+  .pcard::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,var(--tint,rgba(212,175,55,.22)),transparent 60%);opacity:.9;pointer-events:none;}
+  .pvatar{
+    position:relative;width:200px;height:200px;border-radius:50%;
+    background-image:url('hepeng.jpg');background-size:cover;background-position:center 26%;
+    border:2px solid var(--tc,#d4af37);
+    box-shadow:0 0 0 6px rgba(255,255,255,.04),0 18px 40px -12px var(--tc,#d4af37);
+    transform:translateZ(46px);
+  }
+  .ears{position:absolute;left:50%;top:-10px;width:260px;height:150px;transform:translateX(-50%) translateZ(80px);pointer-events:none;}
+  .ears svg{width:100%;height:100%;overflow:visible;}
+  .pbadge{position:absolute;right:6px;bottom:6px;width:52px;height:52px;border-radius:50%;background:rgba(10,10,15,.7);border:1px solid var(--tc,#d4af37);display:flex;align-items:center;justify-content:center;font-size:26px;transform:translateZ(70px);box-shadow:0 8px 20px -6px var(--tc,#d4af37);}
+  .pname{margin-top:26px;font-size:26px;letter-spacing:.16em;transform:translateZ(30px);}
+  .ptag{margin-top:6px;font-size:11px;letter-spacing:.3em;color:var(--tc,#d4af37);transform:translateZ(24px);}
+  .pdesc{margin-top:14px;font-size:12.5px;line-height:1.8;color:var(--muted);letter-spacing:.03em;text-align:center;transform:translateZ(16px);}
+
+  /* 区块 */
+  section{position:relative;z-index:2;padding:110px 5vw;}
+  .sec-head{text-align:center;margin-bottom:64px;}
+  .sec-head .kick{font-size:11px;letter-spacing:.5em;color:var(--accent);margin-bottom:14px;}
+  .sec-head h2{font-size:clamp(28px,5vw,50px);letter-spacing:.08em;font-weight:600;}
+  .sec-head h2 em{font-style:normal;color:var(--accent-soft);}
+
+  /* 档案 */
+  .tabs{display:flex;justify-content:center;gap:14px;margin-bottom:48px;flex-wrap:wrap;}
+  .tab{padding:12px 26px;border-radius:40px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:13px;letter-spacing:.2em;font-family:inherit;cursor:none;transition:.3s;display:flex;gap:8px;align-items:center;}
+  .tab:hover{color:var(--accent-soft);border-color:var(--accent);}
+  .tab.active{background:var(--accent);color:#141018;border-color:var(--accent);font-weight:700;}
+  .profile{max-width:860px;margin:0 auto;}
+  .prow{display:grid;grid-template-columns:120px 1fr 56px;align-items:center;gap:22px;padding:20px 0;border-bottom:1px solid rgba(255,255,255,.06);}
+  .prow .k{font-size:15px;letter-spacing:.12em;color:var(--accent-soft);}
+  .bar{height:6px;border-radius:6px;background:rgba(255,255,255,.07);overflow:hidden;}
+  .bar i{display:block;height:100%;width:0;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent-soft));transition:width 1.3s cubic-bezier(.19,1,.22,1);}
+  .prow .v{text-align:right;font-size:13px;color:var(--muted);}
+
+  /* 释义 */
+  .mean{max-width:720px;margin:0 auto;text-align:center;}
+  .mean p{color:#cfcac0;line-height:2.3;font-size:16px;letter-spacing:.04em;}
+  .mean .hl{color:var(--accent-soft);}
+
+  footer{position:relative;z-index:2;text-align:center;padding:80px 5vw 60px;color:var(--muted);font-size:12px;letter-spacing:.24em;}
+  footer .mk{color:var(--accent);font-size:16px;letter-spacing:.4em;margin-bottom:16px;}
+
+  /* 弹窗 */
+  .mask{position:fixed;inset:0;background:rgba(4,4,8,.85);backdrop-filter:blur(10px);z-index:500;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .4s;}
+  .mask.open{opacity:1;pointer-events:auto;}
+  .modal{max-width:600px;width:100%;background:linear-gradient(160deg,rgba(26,26,38,.97),rgba(10,10,16,.99));border:1px solid var(--line);border-radius:24px;padding:44px 44px;position:relative;transform:translateY(30px) scale(.96);transition:transform .45s cubic-bezier(.19,1,.22,1);box-shadow:0 50px 140px -30px #000;}
+  .mask.open .modal{transform:none;}
+  .modal .mav{width:120px;height:120px;border-radius:50%;margin:0 auto 20px;background-image:url('hepeng.jpg');background-size:cover;background-position:center 26%;border:2px solid var(--tc,#d4af37);box-shadow:0 0 0 6px rgba(255,255,255,.05);}
+  .modal h3{text-align:center;font-size:30px;letter-spacing:.14em;color:var(--accent-soft);margin-bottom:6px;}
+  .modal .mt{text-align:center;font-size:11px;letter-spacing:.34em;color:var(--accent);margin-bottom:24px;}
+  .modal p{color:#cfcac0;line-height:2.1;font-size:14.5px;}
+  .modal .kp{position:absolute;top:20px;right:24px;font-size:24px;color:var(--muted);cursor:none;transition:.3s;}
+  .modal .kp:hover{color:var(--accent-soft);transform:rotate(90deg);}
+  .modal .foot{margin-top:26px;border-top:1px solid rgba(255,255,255,.08);padding-top:16px;font-size:11px;letter-spacing:.2em;color:var(--muted);text-align:center;}
+
+  /* toast */
+  .toast{position:fixed;bottom:34px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel);border:1px solid var(--line);color:var(--accent-soft);padding:13px 26px;border-radius:40px;font-size:13px;letter-spacing:.18em;z-index:900;opacity:0;pointer-events:none;transition:.4s;backdrop-filter:blur(10px);}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  /* loader */
+  .loader{position:fixed;inset:0;background:var(--bg);z-index:10000;display:flex;flex-direction:column;gap:22px;align-items:center;justify-content:center;transition:opacity .8s,visibility .8s;}
+  .loader.hide{opacity:0;visibility:hidden;}
+  .loader .ln{font-size:12px;letter-spacing:.5em;color:var(--accent-soft);}
+  .loader .rg{width:52px;height:52px;border:2px solid rgba(212,175,55,.2);border-top-color:var(--accent);border-radius:50%;animation:spin 1s linear infinite;}
+
+  @keyframes up{from{opacity:0;transform:translateY(28px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  @keyframes floaty{0%,100%{transform:translateY(0);}50%{transform:translateY(-16px);}}
+  @media(max-width:640px){nav{display:none;}.stage{height:460px;}.ring{width:250px;height:380px;}.pvatar{width:160px;height:160px;}.prow{grid-template-columns:90px 1fr 40px;gap:12px;}}
+</style>
+</head>
+<body>
+
+<div class="loader" id="loader"><div class="rg"></div><div class="ln">何 鹏 · 载 入</div></div>
+
+<div class="cur-dot" id="dot"></div>
+<div class="cur-ring" id="ring"></div>
+<canvas id="bgcanvas"></canvas>
+<div class="blob b1" id="blob1"></div>
+<div class="blob b2"></div>
+
+<header>
+  <div class="logo">何鹏 · <b>HEPENG</b></div>
+  <nav>
+    <a href="#forms">三格</a>
+    <a href="#archive">档案</a>
+    <a href="#about">释义</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <div class="eyebrow">SAME NAME · THREE SOULS</div>
+  <h1>何鹏</h1>
+  <div class="sub">猪 · 猴 · 狗</div>
+  <div class="drag-hint">拖动旋转 · 点击查看</div>
+
+  <div class="stage" id="stage">
+    <div class="ring" id="ring"></div>
+  </div>
+</div>
+
+<section id="forms">
+  <div class="sec-head">
+    <div class="kick">THREE FORMS</div>
+    <h2>何鹏的三副面孔 <em>/ Three</em></h2>
+  </div>
+  <div class="tabs" id="tabs"></div>
+  <div class="profile" id="profile"></div>
+</section>
+
+<section id="archive">
+  <div class="sec-head">
+    <div class="kick">INTERPRETATION</div>
+    <h2>释义 <em>/ On the Name</em></h2>
+  </div>
+  <div class="mean">
+    <p>
+      「何」者，诘问之源；「鹏」者，大鸟之志，出于《庄子》，扶摇而上九万里。<br>
+      以诘问之心，养鲲鹏之志 —— 温厚如猪，机巧如猴，忠诚如狗，皆归于此名。<br>
+      <span class="hl">三格同源，一名万象。</span>
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="mk">何 鹏</div>
+  <div>© 2026　三格同源 · 交互典藏版</div>
+</footer>
+
+<div class="mask" id="mask">
+  <div class="modal">
+    <div class="kp" id="kp">×</div>
+    <div class="mav" id="mav"></div>
+    <h3>何鹏</h3>
+    <div class="mt" id="mt"></div>
+    <p id="md"></p>
+    <div class="foot">ESC 关闭　·　← → 切换</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============ 数据 ============ */
+const FORMS = [
+  {
+    key:"猪格", color:"#f2a0bf", tint:"rgba(242,160,191,.24)", emoji:"🐖", tag:"THE KIND",
+    short:"温厚丰足 · 生活的美食家",
+    full:"何鹏·猪格，是最懂「丰足」的那一面。以食为天、以安为福，把日子过成一桌热气腾腾的宴席。看似憨厚，胸中自有一杆秤：不争、不抢、不慌，把每一分光阴都嚼得香甜。所谓大智若愚，说的正是他。",
+    stats:[["温厚",95],["食量",98],["耐性",90],["大智若愚",88]],
+    ears:'<svg viewBox="0 0 260 150"><path d="M70 96 Q54 24 112 40 Q104 86 96 104 Z" fill="#f2a0bf" stroke="#c85e86" stroke-width="3" stroke-linejoin="round"/><path d="M190 96 Q206 24 148 40 Q156 86 164 104 Z" fill="#f2a0bf" stroke="#c85e86" stroke-width="3" stroke-linejoin="round"/></svg>'
+  },
+  {
+    key:"猴格", color:"#e8c86a", tint:"rgba(232,200,106,.22)", emoji:"🐒", tag:"THE WIT",
+    short:"机敏破局 · 头脑转得飞快",
+    full:"何鹏·猴格，是最会「破局」的那一面。眼明手快、好奇心盛，见缝插针，逢山开路。别人还在犹豫，他已翻过两道墙；别人刚想到一步，他已准备好三步。灵动不羁，却始终心向高处——聪慧之「鹏」，在他身上最是淋漓尽致。",
+    stats:[["机敏",97],["行动力",95],["好奇心",99],["破局力",92]],
+    ears:'<svg viewBox="0 0 260 150"><circle cx="34" cy="66" r="30" fill="#d69a63" stroke="#9c6438" stroke-width="3"/><circle cx="226" cy="66" r="30" fill="#d69a63" stroke="#9c6438" stroke-width="3"/><circle cx="34" cy="66" r="15" fill="#eab98c"/><circle cx="226" cy="66" r="15" fill="#eab98c"/></svg>'
+  },
+  {
+    key:"狗格", color:"#8fb8e8", tint:"rgba(143,184,232,.22)", emoji:"🐕", tag:"THE FAITHFUL",
+    short:"忠诚守夜 · 重情重义",
+    full:"何鹏·狗格，是最重「情义」的那一面。守诺如金，风雨来时站在门口，替所有人挡下寒意。不擅言辞，却以行动写尽忠诚：谁有难，他第一个到；谁安睡，他最后才眠。慧不在巧，而在诚——这份赤忱，是「鹏」的另一重注解。",
+    stats:[["忠诚",99],["守诺",97],["义气",96],["警觉",90]],
+    ears:'<svg viewBox="0 0 260 150"><path d="M66 40 Q28 66 38 138 Q70 126 82 74 Z" fill="#c08a5c" stroke="#7c5230" stroke-width="3" stroke-linejoin="round"/><path d="M194 40 Q232 66 222 138 Q190 126 178 74 Z" fill="#c08a5c" stroke="#7c5230" stroke-width="3" stroke-linejoin="round"/></svg>'
+  }
+];
+
+/* ============ 粒子背景 ============ */
+const cv=document.getElementById('bgcanvas'),ctx=cv.getContext('2d');
+let W,H,pts=[];
+function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+resize();addEventListener('resize',resize);
+for(let i=0;i<110;i++)pts.push({x:Math.random()*W,y:Math.random()*H,r:Math.random()*1.6+.3,vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,a:Math.random()*.55+.15});
+function draw(){
+  ctx.clearRect(0,0,W,H);
+  for(const p of pts){p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=W;if(p.x>W)p.x=0;if(p.y<0)p.y=H;if(p.y>H)p.y=0;
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,7);ctx.fillStyle='rgba(212,175,55,'+p.a+')';ctx.fill();}
+  for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+    const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.hypot(dx,dy);
+    if(d<130){ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.strokeStyle='rgba(212,175,55,'+(0.1*(1-d/130))+')';ctx.stroke();}
+  }
+  requestAnimationFrame(draw);
+}
+draw();
+
+/* ============ 光标 ============ */
+const dot=document.getElementById('dot'),ring=document.getElementById('ring');
+let mx=innerWidth/2,my=innerHeight/2,rx=mx,ry=my;
+addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+(function loop(){rx+=(mx-rx)*.16;ry+=(my-ry)*.16;dot.style.left=mx+'px';dot.style.top=my+'px';ring.style.left=rx+'px';ring.style.top=ry+'px';requestAnimationFrame(loop);})();
+function bindHover(){document.querySelectorAll('a,.tab,.pcard,.kp,.pvatar').forEach(el=>{el.addEventListener('mouseenter',()=>ring.classList.add('big'));el.addEventListener('mouseleave',()=>ring.classList.remove('big'));});}
+
+/* ============ 构建 3D 环 ============ */
+const ringEl=document.getElementById('ring');
+const R=380;
+FORMS.forEach((f,i)=>{
+  const panel=document.createElement('div');
+  panel.className='panel';
+  panel.dataset.i=i;
+  panel.style.transform=`rotateY(${i*120}deg) translateZ(${R}px)`;
+  panel.innerHTML=`
+    <div class="pcard" style="--tc:${f.color};--tint:${f.tint}">
+      <div class="pvatar">
+        <div class="ears">${f.ears}</div>
+        <div class="pbadge">${f.emoji}</div>
+      </div>
+      <div class="pname">何鹏</div>
+      <div class="ptag" style="color:${f.color}">${f.key} · ${f.tag}</div>
+      <div class="pdesc">${f.short}</div>
+    </div>`;
+  panel.querySelector('.pcard').addEventListener('click',()=>{if(!dragged)openModal(i);});
+  ringEl.appendChild(panel);
+});
+
+/* 旋转控制 */
+let rot=-120, targetRot=rot, auto=true, dragging=false, dragged=false, lastX=0, lastT=0, vel=0;
+const stage=document.getElementById('stage');
+stage.addEventListener('pointerdown',e=>{dragging=true;dragged=false;lastX=e.clientX;auto=false;stage.setPointerCapture(e.pointerId);});
+stage.addEventListener('pointermove',e=>{
+  if(dragging){const dx=e.clientX-lastX;lastX=e.clientX;if(Math.abs(dx)>0.4)dragged=true;targetRot+=dx*0.35;vel=dx*0.35;}
+});
+function endDrag(){if(dragging){dragging=false;setTimeout(()=>dragged=false,50);}}
+stage.addEventListener('pointerup',endDrag);
+stage.addEventListener('pointerleave',endDrag);
+stage.addEventListener('pointercancel',endDrag);
+
+(function spin(){
+  if(!dragging){ if(Math.abs(vel)>0.05){targetRot+=vel;vel*=0.94;} else if(auto){targetRot+=0.15;} }
+  rot+=(targetRot-rot)*0.1;
+  ringEl.style.transform=`translateZ(${-R}px) rotateY(${rot}deg)`;
+  // 高亮正面
+  ringEl.querySelectorAll('.panel').forEach((p,i)=>{
+    let a=((i*120+rot)%360+360)%360; if(a>180)a=360-a;
+    const front=a<60; const op=front?1:0.45;
+    p.querySelector('.pcard').style.opacity=op;
+    p.querySelector('.pcard').style.boxShadow=front?`0 30px 80px -20px ${FORMS[i].color}66`:'0 30px 70px -30px rgba(0,0,0,.9)';
+  });
+  requestAnimationFrame(spin);
+})();
+
+/* 舞台鼠标 3D 视差（轻微倾斜，叠加在环旋转外层） */
+const ringWrap=document.getElementById('ring');
+stage.addEventListener('mousemove',e=>{
+  const r=stage.getBoundingClientRect();
+  const y=(e.clientY-r.top)/r.height-0.5;
+  const x=(e.clientX-r.left)/r.width-0.5;
+  ringWrap.style.perspectiveOrigin=`${50+x*14}% ${50+y*14}%`;
+});
+
+/* ============ 档案 ============ */
+const tabsEl=document.getElementById('tabs'), profileEl=document.getElementById('profile');
+let cur=0;
+FORMS.forEach((f,i)=>{
+  const t=document.createElement('div');
+  t.className='tab'+(i===0?' active':'');
+  t.innerHTML=`${f.emoji} <span style="margin-left:6px">${f.key}</span>`;
+  t.addEventListener('click',()=>setForm(i));
+  tabsEl.appendChild(t);
+});
+function setForm(i){
+  cur=i;
+  document.documentElement.style.setProperty('--accent',FORMS[i].color);
+  document.documentElement.style.setProperty('--accent-soft',lighten(FORMS[i].color));
+  document.getElementById('blob1').style.background=FORMS[i].color;
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',j===i));
+  // 环转到对应正面
+  targetRot = -i*120; auto=false;
+  renderProfile(i);
+  showToast('何鹏 · '+FORMS[i].key);
+}
+function lighten(hex){ // 简单提亮
+  const n=parseInt(hex.slice(1),16);let r=(n>>16)+40,g=((n>>8)&255)+40,b=(n&255)+40;
+  r=Math.min(255,r);g=Math.min(255,g);b=Math.min(255,b);
+  return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');
+}
+function renderProfile(i){
+  profileEl.innerHTML='';
+  FORMS[i].stats.forEach(s=>{
+    const d=document.createElement('div');d.className='prow';
+    d.innerHTML=`<div class="k">${s[0]}</div><div class="bar"><i></i></div><div class="v">${s[1]}</div>`;
+    profileEl.appendChild(d);
+  });
+  requestAnimationFrame(()=>{profileEl.querySelectorAll('.bar i').forEach((b,j)=>setTimeout(()=>b.style.width=FORMS[i].stats[j][1]+'%',120+j*120));});
+}
+setForm(0);
+
+/* ============ 弹窗 ============ */
+const mask=document.getElementById('mask');
+let mIdx=0;
+function openModal(i){
+  mIdx=i;const f=FORMS[i];
+  document.getElementById('mav').style.borderColor=f.color;
+  document.getElementById('mav').style.boxShadow=`0 0 0 6px rgba(255,255,255,.05),0 0 40px -6px ${f.color}`;
+  const mt=document.getElementById('mt');mt.textContent=f.key+' · '+f.tag;mt.style.color=f.color;
+  document.getElementById('md').textContent=f.full;
+  mask.classList.add('open');
+}
+function closeModal(){mask.classList.remove('open');}
+document.getElementById('kp').addEventListener('click',closeModal);
+mask.addEventListener('click',e=>{if(e.target===mask)closeModal();});
+function nav(d){mIdx=(mIdx+d+FORMS.length)%FORMS.length;openModal(mIdx);}
+
+/* ============ 键盘 ============ */
+let buffer='';
+addEventListener('keydown',e=>{
+  if(e.key==='Escape')closeModal();
+  if(mask.classList.contains('open')){
+    if(e.key==='ArrowRight')nav(1);
+    if(e.key==='ArrowLeft')nav(-1);
+  }else if(['1','2','3'].includes(e.key)){setForm(+e.key-1);}
+  if(e.key.length===1){buffer=(buffer+e.key).slice(-6).toLowerCase();
+    if(buffer==='hepeng'){document.querySelectorAll('.pvatar').forEach(a=>{a.style.transition='transform .6s';a.style.transform='rotate(360deg) scale(1.15)';setTimeout(()=>a.style.transform='',900);});showToast('🎉 你找到了隐藏的何鹏 ~');buffer='';}
+  }
+});
+
+/* ============ toast ============ */
+let tt;const toast=document.getElementById('toast');
+function showToast(m){toast.textContent=m;toast.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>toast.classList.remove('show'),1800);}
+
+/* 初始 hover 绑定 + 载入 */
+window.addEventListener('load',()=>{
+  setTimeout(()=>{document.getElementById('loader').classList.add('hide');bindHover();},700);
+});
+</script>
+</body>
+</html>
